@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FORENSIC GUARDIAN // Right-Rail Operations Deck</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Phosphor Icons -->
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: #030712;
+      color: #e2e8f0;
+      background-image: 
+        radial-gradient(circle at 20% 0%, rgba(6, 182, 212, 0.08) 0%, transparent 50%),
+        linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+      background-size: 100% 100%, 32px 32px, 32px 32px;
+      overflow-x: hidden;
+    }
+    .font-tech { font-family: 'Chakra Petch', sans-serif; }
+    .font-mono-soc { font-family: 'IBM Plex Mono', monospace; }
+
+    .deck-panel {
+      background: rgba(10, 16, 30, 0.75);
+      border: 1px solid rgba(14, 165, 233, 0.2);
+      backdrop-filter: blur(16px);
+      box-shadow: 0 10px 35px -5px rgba(0, 0, 0, 0.7);
+    }
+    .action-tile {
+      background: linear-gradient(135deg, rgba(15, 23, 42, 0.8) 0%, rgba(8, 14, 27, 0.95) 100%);
+      border: 1px solid rgba(14, 165, 233, 0.25);
+      transition: all 0.25s ease;
+    }
+    .action-tile:hover {
+      border-color: rgba(6, 182, 212, 0.8);
+      transform: translateY(-2px);
+      box-shadow: 0 0 20px rgba(6, 182, 212, 0.25);
+    }
+    .action-tile.active-mode {
+      border-color: #06b6d4;
+      background: linear-gradient(135deg, rgba(6, 182, 212, 0.2) 0%, rgba(15, 23, 42, 0.9) 100%);
+      box-shadow: 0 0 25px rgba(6, 182, 212, 0.3);
+    }
+    .tamper-glow {
+      animation: alert-pulse 1.8s ease-in-out infinite;
+    }
+    @keyframes alert-pulse {
+      0%, 100% { border-color: rgba(244, 63, 94, 0.9); box-shadow: 0 0 20px rgba(244, 63, 94, 0.35); }
+      50% { border-color: rgba(244, 63, 94, 0.2); box-shadow: none; }
+    }
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    ::-webkit-scrollbar-track { background: #030712; }
+    ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #06b6d4; }
+  </style>
+</head>
+
+<body class="min-h-screen flex flex-col justify-between selection:bg-cyan-500 selection:text-black">
+
+  <!-- TOP APP BAR -->
+  <header class="border-b border-cyan-950/80 bg-slate-950/85 backdrop-blur-xl sticky top-0 z-50 px-6 py-3.5">
+    <div class="max-w-[1650px] mx-auto flex flex-wrap items-center justify-between gap-4">
+      <div class="flex items-center gap-3.5">
+        <div class="w-11 h-11 rounded-xl bg-cyan-500/10 border border-cyan-500/40 flex items-center justify-center text-cyan-400 text-2xl font-bold">
+          <i class="ph-bold ph-shield-check"></i>
+        </div>
+        <div>
+          <div class="flex items-center gap-2.5">
+            <h1 class="font-tech text-xl font-bold tracking-wider text-white">FORENSIC GUARDIAN</h1>
+            <span class="px-2 py-0.5 rounded text-[10px] font-mono-soc font-bold bg-cyan-950 text-cyan-300 border border-cyan-700/60">V-DECK 4.2</span>
+          </div>
+          <p class="text-xs text-slate-400 font-mono-soc">Hardware Chain-of-Custody & Cryptographic Verification Deck</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-4">
+        <div class="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-xs font-mono-soc text-slate-400">
+          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span id="live-time">UTC 00:00:00</span>
+        </div>
+        <div id="stat-status" class="px-3.5 py-1.5 rounded-lg border border-emerald-500/40 bg-emerald-950/40 text-xs font-mono-soc text-emerald-400 font-bold flex items-center gap-2">
+          <i class="ph-bold ph-seal-check"></i> 100% INTACT
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN SKETCH LAYOUT: WIDE PRIMARY VAULT ON LEFT + 5 STACKED TILES ON RIGHT -->
+  <main class="flex-1 max-w-[1650px] w-full mx-auto p-4 md:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+
+    <!-- LEFT LARGE SCREEN: PRIMARY FORENSIC VAULT & ACTIVE DOSSIER VIEWER (9 COLS) -->
+    <div class="lg:col-span-9 flex flex-col gap-6">
+
+      <!-- QUICK STAT BAR -->
+      <div class="deck-panel rounded-2xl p-4 flex flex-wrap items-center justify-between gap-4">
+        <div class="flex items-center gap-6 text-xs font-mono-soc">
+          <div>
+            <span class="text-slate-500">DOSSIERS:</span>
+            <span id="stat-cases" class="text-white font-bold font-tech text-base ml-1.5">0</span>
+          </div>
+          <div class="text-slate-700">|</div>
+          <div>
+            <span class="text-slate-500">EXHIBITS:</span>
+            <span id="stat-evidence" class="text-cyan-400 font-bold font-tech text-base ml-1.5">0</span>
+          </div>
+          <div class="text-slate-700">|</div>
+          <div>
+            <span class="text-slate-500">SEAL ALGORITHM:</span>
+            <span class="text-slate-300 font-bold ml-1.5">SHA-256 (256-BIT)</span>
+          </div>
+        </div>
+
+        <div id="active-mode-label" class="text-xs font-mono-soc text-cyan-400 flex items-center gap-2">
+          <span class="w-2 h-2 rounded-full bg-cyan-400 animate-ping"></span>
+          VIEW MODE: ACTIVE VAULT
+        </div>
+      </div>
+
+      <!-- MAIN DISPLAY ARENA (CAN SWITCH BASED ON RIGHT BUTTONS) -->
+      <div id="main-display-arena" class="deck-panel rounded-2xl p-6 min-h-[580px] space-y-6">
+        
+        <!-- HEADER -->
+        <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+          <h2 id="view-title" class="text-sm font-tech uppercase tracking-wider text-white flex items-center gap-2">
+            <i class="ph-bold ph-database text-cyan-400"></i> Active Forensic Case Files & Evidence Vault
+          </h2>
+          <span id="case-counter-badge" class="text-xs font-mono-soc text-slate-500">0 RECORDS LOGGED</span>
+        </div>
+
+        <!-- DYNAMIC CONTENT: VAULT / OR INTAKE FORMS -->
+        <div id="cases-container" class="space-y-4">
+          <!-- Dynamically injected -->
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- RIGHT RAIL: EXACTLY 5 VERTICALLY STACKED ACTION BOXES (3 COLS) -->
+    <div class="lg:col-span-3 flex flex-col gap-3.5">
+      
+      <div class="px-1 text-[11px] font-mono-soc text-slate-500 uppercase tracking-widest flex items-center justify-between">
+        <span>COMMAND TILES (5)</span>
+        <i class="ph-bold ph-caret-down"></i>
+      </div>
+
+      <!-- TILE 1: REGISTER NEW CASE -->
+      <button onclick="openConsole('case')" id="tile-1" class="action-tile w-full p-4 rounded-2xl text-left flex items-center gap-3.5 group cursor-pointer">
+        <div class="w-12 h-12 rounded-xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400 text-2xl group-hover:scale-105 transition-all">
+          <i class="ph-bold ph-folder-plus"></i>
+        </div>
+        <div class="flex-1">
+          <div class="text-[10px] font-mono-soc text-slate-500 uppercase">Slot 01 // Intake</div>
+          <div class="text-sm font-tech font-bold text-white group-hover:text-cyan-300">1. Register Case</div>
+          <div class="text-[11px] text-slate-400 font-mono-soc">Initialize investigation</div>
+        </div>
+      </button>
+
+      <!-- TILE 2: LOG EVIDENCE & SEAL -->
+      <button onclick="openConsole('evidence')" id="tile-2" class="action-tile w-full p-4 rounded-2xl text-left flex items-center gap-3.5 group cursor-pointer">
+        <div class="w-12 h-12 rounded-xl bg-indigo-500/10 border border-indigo-500/30 flex items-center justify-center text-indigo-400 text-2xl group-hover:scale-105 transition-all">
+          <i class="ph-bold ph-fingerprint"></i>
+        </div>
+        <div class="flex-1">
+          <div class="text-[10px] font-mono-soc text-slate-500 uppercase">Slot 02 // Custody</div>
+          <div class="text-sm font-tech font-bold text-white group-hover:text-cyan-300">2. Log Evidence</div>
+          <div class="text-[11px] text-slate-400 font-mono-soc">Compute SHA-256 seal</div>
+        </div>
+      </button>
+
+      <!-- TILE 3: VIEW ACTIVE VAULT -->
+      <button onclick="openConsole('vault')" id="tile-3" class="action-tile active-mode w-full p-4 rounded-2xl text-left flex items-center gap-3.5 group cursor-pointer">
+        <div class="w-12 h-12 rounded-xl bg-teal-500/10 border border-teal-500/30 flex items-center justify-center text-teal-400 text-2xl group-hover:scale-105 transition-all">
+          <i class="ph-bold ph-archive"></i>
+        </div>
+        <div class="flex-1">
+          <div class="text-[10px] font-mono-soc text-slate-500 uppercase">Slot 03 // Registry</div>
+          <div class="text-sm font-tech font-bold text-white group-hover:text-cyan-300">3. View All Cases</div>
+          <div class="text-[11px] text-slate-400 font-mono-soc">Inspect chain of custody</div>
+        </div>
+      </button>
+
+      <!-- TILE 4: RUN INTEGRITY AUDIT -->
+      <button onclick="auditAllCases()" id="tile-4" class="action-tile w-full p-4 rounded-2xl text-left flex items-center gap-3.5 group cursor-pointer">
+        <div class="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 text-2xl group-hover:scale-105 transition-all">
+          <i class="ph-bold ph-shield-check"></i>
+        </div>
+        <div class="flex-1">
+          <div class="text-[10px] font-mono-soc text-slate-500 uppercase">Slot 04 // Security</div>
+          <div class="text-sm font-tech font-bold text-white group-hover:text-cyan-300">4. Run Audit</div>
+          <div class="text-[11px] text-slate-400 font-mono-soc">Verify all digital hashes</div>
+        </div>
+      </button>
+
+      <!-- TILE 5: RESET BENCHMARK DATA -->
+      <button onclick="resetDefaults()" id="tile-5" class="action-tile w-full p-4 rounded-2xl text-left flex items-center gap-3.5 group cursor-pointer">
+        <div class="w-12 h-12 rounded-xl bg-rose-500/10 border border-rose-500/30 flex items-center justify-center text-rose-400 text-2xl group-hover:scale-105 transition-all">
+          <i class="ph-bold ph-arrow-counter-clockwise"></i>
+        </div>
+        <div class="flex-1">
+          <div class="text-[10px] font-mono-soc text-slate-500 uppercase">Slot 05 // System</div>
+          <div class="text-sm font-tech font-bold text-white group-hover:text-rose-300">5. Reset Baseline</div>
+          <div class="text-[11px] text-slate-400 font-mono-soc">Restore clean test records</div>
+        </div>
+      </button>
+
+    </div>
+
+  </main>
+
+  <!-- NOTIFICATION TOAST -->
+  <div id="toast" class="fixed bottom-6 right-6 max-w-sm px-4 py-3 rounded-lg shadow-2xl border text-xs font-mono-soc transition-all duration-300 opacity-0 pointer-events-none translate-y-3 z-50"></div>
+
+  <!-- SCRIPT LOGIC -->
+  <script>
+    const STORAGE_KEY = "FORENSIC_GUARDIAN_RIGHT_TILES_V1";
+    let currentViewMode = "vault"; // 'vault', 'case', 'evidence'
+
+    const DEFAULT_BENCHMARK = [
+      {
+        id: "CASE-101",
+        title: "Server Infiltration & Ransomware Attack",
+        officer: "Det. Sharma (Cyber Defense Unit)",
+        description: "Unauthorized root administrative escalation detected on production database servers with exfiltration signatures.",
+        created_at: "2026-10-28 09:45:12",
+        evidence: [
+          {
+            id: "EVD-01",
+            description: "Samsung 980 Pro 2TB NVMe SSD S/N: S6B0NX0R912443",
+            location: "Server Rack B, Data Center Alpha",
+            timestamp: "2026-10-28 10:15:00",
+            fingerprint: "6416490a7bf5bde143987e7acb933b0e13a29c6fcfad192eb29322188a3efb8f"
+          },
+          {
+            id: "EVD-02",
+            description: "Captured Memory Dump File: memdump_20261028.raw",
+            location: "Host IP: 192.168.1.100 (Gateway Core)",
+            timestamp: "2026-10-28 10:30:20",
+            fingerprint: "dfd839257fc02dc51ab6f6f8327194ed0cb7e322accab47ecc42faff0fe72f34"
+          }
+        ]
+      }
+    ];
+
+    setInterval(() => {
+      const now = new Date();
+      document.getElementById('live-time').innerText = "UTC " + now.toTimeString().split(' ')[0];
+    }, 1000);
+
+    async function sha256(text) {
+      const msgUint8 = new TextEncoder().encode(text);
+      const hashBuffer = await crypto.subtle.digest('SHA-256', msgUint8);
+      return Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+
+    function getCases() {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      if (!stored) {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(DEFAULT_BENCHMARK));
+        return DEFAULT_BENCHMARK;
+      }
+      try { return JSON.parse(stored); } catch (e) { return DEFAULT_BENCHMARK; }
+    }
+
+    function saveCases(data) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+      render();
+    }
+
+    function resetDefaults() {
+      if (confirm("Reset case archive back to clean forensic benchmark baseline?")) {
+        localStorage.removeItem(STORAGE_KEY);
+        openConsole('vault');
+        showToast("System restored to baseline benchmark records.", "info");
+      }
+    }
+
+    function showToast(msg, type = "success") {
+      const toast = document.getElementById("toast");
+      toast.innerText = msg;
+      toast.className = "fixed bottom-6 right-6 max-w-sm px-4 py-3 rounded-lg shadow-2xl border text-xs font-mono-soc transition-all duration-300 z-50 ";
+      if (type === "success") {
+        toast.className += "bg-emerald-950 text-emerald-300 border-emerald-700/80";
+      } else if (type === "danger") {
+        toast.className += "bg-rose-950 text-rose-300 border-rose-700/80";
+      } else {
+        toast.className += "bg-cyan-950 text-cyan-300 border-cyan-700/80";
+      }
+      toast.classList.remove("opacity-0", "pointer-events-none", "translate-y-3");
+      setTimeout(() => toast.classList.add("opacity-0", "pointer-events-none", "translate-y-3"), 3500);
+    }
+
+    function openConsole(mode) {
+      currentViewMode = mode;
+      
+      // Update tile active indicators
+      ['tile-1', 'tile-2', 'tile-3'].forEach(id => {
+        document.getElementById(id).classList.remove('active-mode');
+      });
+      if (mode === 'case') document.getElementById('tile-1').classList.add('active-mode');
+      if (mode === 'evidence') document.getElementById('tile-2').classList.add('active-mode');
+      if (mode === 'vault') document.getElementById('tile-3').classList.add('active-mode');
+
+      render();
+    }
+
+    function handleCreateCase(e) {
+      e.preventDefault();
+      const cases = getCases();
+      const newId = `CASE-${100 + cases.length + 1}`;
+      const title = document.getElementById("case-title").value.trim().toUpperCase();
+      const officer = document.getElementById("case-officer").value.trim();
+      const desc = document.getElementById("case-desc").value.trim();
+
+      cases.push({
+        id: newId,
+        title: title,
+        officer: officer,
+        description: desc,
+        created_at: new Date().toISOString().replace('T', ' ').substring(0, 19),
+        evidence: []
+      });
+
+      saveCases(cases);
+      showToast(`Case ${newId} initialized successfully!`, "success");
+      openConsole('evidence');
+    }
+
+    async function handleLogEvidence(e) {
+      e.preventDefault();
+      const caseId = document.getElementById("evidence-case-id").value;
+      const desc = document.getElementById("evidence-desc").value.trim();
+      const loc = document.getElementById("evidence-location").value.trim();
+
+      const combined = `${desc}|${loc}`;
+      const fingerprint = await sha256(combined);
+
+      const cases = getCases();
+      const targetCase = cases.find(c => c.id === caseId);
+      if (!targetCase) return;
+
+      const newId = `EVD-${String(targetCase.evidence.length + 1).padStart(2, '0')}`;
+      targetCase.evidence.push({
+        id: newId,
+        description: desc,
+        location: loc,
+        timestamp: new Date().toISOString().replace('T', ' ').substring(0, 19),
+        fingerprint: fingerprint
+      });
+
+      saveCases(cases);
+      showToast(`Exhibit ${newId} sealed with SHA-256 seal.`, "success");
+      openConsole('vault');
+    }
+
+    async function simulateTamper(caseId, evidenceId) {
+      const cases = getCases();
+      const targetCase = cases.find(c => c.id === caseId);
+      if (!targetCase) return;
+      const item = targetCase.evidence.find(ev => ev.id === evidenceId);
+      if (!item) return;
+
+      const fakeModification = prompt("SIMULATE ATTACK TAMPERING:\nModify exhibit details to test tamper detection:", item.description + " [ALTERED]");
+      if (fakeModification && fakeModification !== item.description) {
+        item.description = fakeModification;
+        saveCases(cases);
+        showToast(`Evidence ${evidenceId} altered! Integrity mismatch detected.`, "danger");
+      }
+    }
+
+    async function auditAllCases() {
+      const cases = getCases();
+      let total = 0;
+      let tampered = 0;
+
+      for (const c of cases) {
+        for (const ev of c.evidence) {
+          total++;
+          const live = await sha256(`${ev.description}|${ev.location}`);
+          if (live !== ev.fingerprint) tampered++;
+        }
+      }
+
+      if (tampered === 0) {
+        showToast(`GLOBAL AUDIT PASS: All ${total} evidence artifact(s) confirmed authentic!`, "success");
+      } else {
+        showToast(`TAMPER ALERT: ${tampered} exhibit(s) mismatch original digital fingerprint!`, "danger");
+      }
+      openConsole('vault');
+    }
+
+    async function render() {
+      const cases = getCases();
+      let totalEvidence = 0;
+      let tamperedFound = false;
+
+      // Stats
+      cases.forEach(c => totalEvidence += c.evidence.length);
+      document.getElementById("stat-cases").innerText = cases.length;
+      document.getElementById("stat-evidence").innerText = totalEvidence;
+      document.getElementById("case-counter-badge").innerText = `${cases.length} ACTIVE DOSSIERS`;
+
+      const container = document.getElementById("cases-container");
+      const viewTitle = document.getElementById("view-title");
+      const modeLabel = document.getElementById("active-mode-label");
+
+      // Check for tampered status across data
+      for (const c of cases) {
+        for (const ev of c.evidence) {
+          const liveHash = await sha256(`${ev.description}|${ev.location}`);
+          if (liveHash !== ev.fingerprint) tamperedFound = true;
+        }
+      }
+
+      const statStatus = document.getElementById("stat-status");
+      if (tamperedFound) {
+        statStatus.className = "px-3.5 py-1.5 rounded-lg border border-rose-500/60 bg-rose-950/60 text-xs font-mono-soc text-rose-400 font-bold flex items-center gap-2 tamper-glow";
+        statStatus.innerHTML = `<i class="ph-bold ph-warning-octagon"></i> ALERT: TAMPERED`;
+      } else {
+        statStatus.className = "px-3.5 py-1.5 rounded-lg border border-emerald-500/40 bg-emerald-950/40 text-xs font-mono-soc text-emerald-400 font-bold flex items-center gap-2";
+        statStatus.innerHTML = `<i class="ph-bold ph-seal-check"></i> 100% INTACT`;
+      }
+
+      // SCREEN 1: NEW CASE FORM
+      if (currentViewMode === "case") {
+        modeLabel.innerText = "MODE: NEW CASE REGISTRATION";
+        viewTitle.innerHTML = `<i class="ph-bold ph-folder-plus text-cyan-400"></i> Register New Forensic Case`;
+        container.innerHTML = `
+          <div class="max-w-2xl mx-auto py-4">
+            <form onsubmit="handleCreateCase(event)" class="space-y-4">
+              <div>
+                <label class="block text-xs font-mono-soc text-slate-400 mb-1">Dossier / Case Title</label>
+                <input type="text" id="case-title" required placeholder="e.g. OPERATION RANSOMWARE BREACH" 
+                       class="w-full bg-slate-950/90 border border-slate-800 focus:border-cyan-500 rounded-lg px-3.5 py-2.5 text-sm text-slate-100 placeholder:text-slate-600 outline-none font-mono-soc" />
+              </div>
+              <div>
+                <label class="block text-xs font-mono-soc text-slate-400 mb-1">Lead Cyber Examiner / Officer</label>
+                <input type="text" id="case-officer" required placeholder="e.g. Special Investigator Sharma" 
+                       class="w-full bg-slate-950/90 border border-slate-800 focus:border-cyan-500 rounded-lg px-3.5 py-2.5 text-sm text-slate-100 placeholder:text-slate-600 outline-none font-mono-soc" />
+              </div>
+              <div>
+                <label class="block text-xs font-mono-soc text-slate-400 mb-1">Incident Summary & Context</label>
+                <textarea id="case-desc" rows="3" required placeholder="Root escalations, targeted database clusters, or physical artifact sources..." 
+                          class="w-full bg-slate-950/90 border border-slate-800 focus:border-cyan-500 rounded-lg px-3.5 py-2.5 text-sm text-slate-100 placeholder:text-slate-600 outline-none text-xs"></textarea>
+              </div>
+              <div class="flex gap-3 pt-2">
+                <button type="submit" class="flex-1 py-3 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-tech font-bold rounded-lg text-xs tracking-wider transition-all flex items-center justify-center gap-2">
+                  <i class="ph-bold ph-plus-circle"></i> INITIALIZE RECORD DOSSIER
+                </button>
+                <button type="button" onclick="openConsole('vault')" class="px-5 py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 font-mono-soc rounded-lg text-xs">
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+        `;
+        return;
+      }
+
+      // SCREEN 2: LOG EVIDENCE FORM
+      if (currentViewMode === "evidence") {
+        modeLabel.innerText = "MODE: EVIDENCE INTAKE";
+        viewTitle.innerHTML = `<i class="ph-bold ph-fingerprint text-indigo-400"></i> Log Seized Evidence & Assign SHA-256 Seal`;
+        
+        let caseOptions = cases.map(c => `<option value="${c.id}">[${c.id}] ${c.title.substring(0, 32)}...</option>`).join('');
+
+        container.innerHTML = `
+          <div class="max-w-2xl mx-auto py-4">
+            <form onsubmit="handleLogEvidence(event)" class="space-y-4">
+              <div>
+                <label class="block text-xs font-mono-soc text-slate-400 mb-1">Target Case ID</label>
+                <select id="evidence-case-id" required class="w-full bg-slate-950/90 border border-slate-800 focus:border-cyan-500 rounded-lg px-3.5 py-2.5 text-sm text-slate-100 outline-none font-mono-soc">
+                  ${caseOptions}
+                </select>
+              </div>
+              <div>
+                <label class="block text-xs font-mono-soc text-slate-400 mb-1">Hardware / Exhibit Description</label>
+                <input type="text" id="evidence-desc" required placeholder="e.g. Samsung 980 Pro 2TB NVMe SSD S/N: S6B0NX0R..." 
+                       class="w-full bg-slate-950/90 border border-slate-800 focus:border-cyan-500 rounded-lg px-3.5 py-2.5 text-sm text-slate-100 placeholder:text-slate-600 outline-none font-mono-soc" />
+              </div>
+              <div>
+                <label class="block text-xs font-mono-soc text-slate-400 mb-1">Seizure Site / Recovery Location</label>
+                <input type="text" id="evidence-location" required placeholder="e.g. Server Rack C3, 2nd Floor Data Center" 
+                       class="w-full bg-slate-950/90 border border-slate-800 focus:border-cyan-500 rounded-lg px-3.5 py-2.5 text-sm text-slate-100 placeholder:text-slate-600 outline-none font-mono-soc" />
+              </div>
+              <div class="flex gap-3 pt-2">
+                <button type="submit" class="flex-1 py-3 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white font-tech font-bold rounded-lg text-xs tracking-wider transition-all flex items-center justify-center gap-2 shadow-lg shadow-cyan-500/20">
+                  <i class="ph-bold ph-lock-key"></i> COMPUTE SHA-256 & SEAL EXHIBIT
+                </button>
+                <button type="button" onclick="openConsole('vault')" class="px-5 py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 font-mono-soc rounded-lg text-xs">
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+        `;
+        return;
+      }
+
+      // SCREEN 3: MASTER VAULT VIEW (DEFAULT)
+      modeLabel.innerText = "MODE: ACTIVE EVIDENCE VAULT";
+      viewTitle.innerHTML = `<i class="ph-bold ph-database text-cyan-400"></i> Active Forensic Case Files & Evidence Vault`;
+      container.innerHTML = "";
+
+      if (cases.length === 0) {
+        container.innerHTML = `
+          <div class="p-12 text-center text-slate-500 font-mono-soc text-sm">
+            No active forensic dossiers logged. Click "1. Register Case" on the right rail to initialize.
+          </div>
+        `;
+        return;
+      }
+
+      for (const c of cases) {
+        const caseCard = document.createElement("div");
+        caseCard.className = "border border-slate-800/80 rounded-xl overflow-hidden bg-slate-950/60 shadow-lg";
+
+        let evidenceHtml = "";
+        if (c.evidence.length === 0) {
+          evidenceHtml = `
+            <div class="px-6 py-4 text-xs font-mono-soc text-slate-500 italic bg-slate-950/40">
+              No evidence exhibits registered under this case yet.
+            </div>
+          `;
+        } else {
+          for (const ev of c.evidence) {
+            const liveHash = await sha256(`${ev.description}|${ev.location}`);
+            const isIntact = (liveHash === ev.fingerprint);
+
+            evidenceHtml += `
+              <div class="p-5 border-t border-slate-800/80 bg-slate-950/40 hover:bg-slate-950/70 transition-all ${!isIntact ? 'border-rose-900/60 bg-rose-950/10' : ''}">
+                <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
+                  <div class="flex items-center gap-2.5">
+                    <span class="px-2.5 py-0.5 text-xs font-mono-soc rounded bg-slate-800 text-cyan-300 font-semibold border border-slate-700">${ev.id}</span>
+                    <span class="text-sm font-semibold text-slate-100">${escapeHtml(ev.description)}</span>
+                  </div>
+                  <div>
+                    ${isIntact 
+                      ? `<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-[11px] font-mono-soc font-bold bg-emerald-950 text-emerald-400 border border-emerald-700/60">
+                           <i class="ph-bold ph-seal-check"></i> SEAL VERIFIED
+                         </span>`
+                      : `<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-[11px] font-mono-soc font-bold bg-rose-950 text-rose-400 border border-rose-700/80 tamper-glow">
+                           <i class="ph-bold ph-warning-octagon"></i> TAMPER DETECTED
+                         </span>`
+                    }
+                  </div>
+                </div>
+
+                <div class="text-xs text-slate-400 mb-3 font-mono-soc flex items-center gap-4">
+                  <span><i class="ph ph-map-pin text-cyan-400"></i> ${escapeHtml(ev.location)}</span>
+                  <span>•</span>
+                  <span><i class="ph ph-clock text-cyan-400"></i> ${ev.timestamp}</span>
+                </div>
+
+                <div class="bg-slate-950 border border-slate-800/90 p-3 rounded-xl font-mono-soc text-xs space-y-1.5">
+                  <div class="flex items-center justify-between text-slate-500 text-[11px]">
+                    <span>ORIGINAL IMMUTABLE SHA-256 SEAL:</span>
+                    <button onclick="simulateTamper('${c.id}', '${ev.id}')" class="text-amber-400 hover:text-amber-300 underline font-bold cursor-pointer">
+                      [SIMULATE TAMPER]
+                    </button>
+                  </div>
+                  <div class="text-cyan-400 break-all select-all">${ev.fingerprint}</div>
+
+                  ${!isIntact ? `
+                    <div class="pt-2 mt-2 border-t border-rose-900/60 text-rose-400 text-[11px]">
+                      <span class="font-bold">LIVE RECOMPUTED DIGEST (MISMATCH):</span>
+                      <div class="break-all mt-0.5 text-rose-400 font-bold">${liveHash}</div>
+                    </div>
+                  ` : ''}
+                </div>
+              </div>
+            `;
+          }
+        }
+
+        caseCard.innerHTML = `
+          <div class="p-5 bg-slate-900/50 flex flex-wrap items-start justify-between gap-4">
+            <div>
+              <div class="flex items-center gap-2 mb-1.5">
+                <span class="px-2.5 py-0.5 rounded bg-cyan-500/10 text-cyan-300 border border-cyan-500/30 text-xs font-mono-soc font-bold">${c.id}</span>
+                <h3 class="text-base font-bold text-white tracking-wide font-tech">${escapeHtml(c.title)}</h3>
+              </div>
+              <p class="text-xs text-slate-400 font-mono-soc"><i class="ph ph-user text-cyan-400"></i> Lead Officer: <span class="text-slate-300">${escapeHtml(c.officer)}</span></p>
+              <p class="text-xs text-slate-400 mt-2">${escapeHtml(c.description)}</p>
+            </div>
+            <div class="text-right font-mono-soc text-xs text-slate-500">
+              <div>Seized Exhibits: <span class="text-cyan-400 font-bold">${c.evidence.length}</span></div>
+              <div class="text-[11px] mt-1">${c.created_at}</div>
+            </div>
+          </div>
+          <div>${evidenceHtml}</div>
+        `;
+
+        container.appendChild(caseCard);
+      }
+    }
+
+    function escapeHtml(text) {
+      if (!text) return "";
+      return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    }
+
+    window.addEventListener("DOMContentLoaded", render);
+  </script>
+</body>
+</html>
